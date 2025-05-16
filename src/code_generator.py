@@ -31,8 +31,12 @@ class CodeGenerator:
                 op="mul"
             elif op == "/":
                 op="div"
-            self.code << op << " ebx, ecx" << "\n"
-            self.code << "mov eax, ebx" << "\n"
+            if op in ["add","sub"]:
+                self.code << op << " ebx, ecx" << "\n"
+                self.code << "mov eax, ebx" << "\n"
+            else:
+                self.code << "mov eax, ebx" << "\n"
+                self.code << op << " ecx\n"
             return "eax"
 
 
