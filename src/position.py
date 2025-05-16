@@ -1,3 +1,5 @@
+import sys
+
 class BasePosition:
     def __init__(self, index, array):
         self.index=index
@@ -39,3 +41,9 @@ class ParserPosition(BasePosition):
     def copy(self):
         return ParserPosition(self.index,
                               self.array)
+    def get(self, token):
+        next_tk=self.consume()
+        if next_tk.token_type == token:
+            return next_tk
+        print(f"Expected: {token} got {next_tk.token_type}")
+        sys.exit()
