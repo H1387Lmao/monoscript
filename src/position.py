@@ -45,5 +45,8 @@ class ParserPosition(BasePosition):
         next_tk=self.consume()
         if next_tk.token_type == token:
             return next_tk
-        print(f"Expected: {token} got {next_tk.token_type}")
+        token = f"'{token}'" if len(token)==1 else token
+        got = next_tk.token_type if len(next_tk.token_type) else f"'{next_tk.token_type}'"
+
+        print(f"Expected: {token} got {got}")
         sys.exit()

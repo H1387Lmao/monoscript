@@ -2,7 +2,7 @@ class TOKEN_TYPE:
     IDENTIFIER="IDENTIFIER"
     NUMBER="NUMBER"
 
-KEYWORDS = ("int",)
+KEYWORDS = ("int", "exit")
 
 class Token:
     def __init__(self, token_type, token_value, position):
