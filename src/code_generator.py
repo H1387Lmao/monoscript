@@ -17,10 +17,25 @@ class CodeGenerator:
                 return node.token_value
             self.code << "mov eax, [ebp-" << self.get_variable_loc(node.token_value)*4<<"]\n" 
             return "eax"
-        elif node[0] in "+/-*":
-            left = node[1]
-            right = node[2]
-            print("not implemented")
+        elif node[0].token_type in "+/-*":
+            left = self.parse_value(node[1])
+            self.code<<"mov ebx, "<< left << "\n"
+            right = self.parse_value(node[2])
+            self.code<<"mov ecx, "<<right << "\n"
+            op = node[0].token_type
+            if op == "+":
+                op="add"
+            elif op == "-":
+                op="sub"
+            elif op == "*":
+                op="mul"
+            elif op == "/":
+                op="div"
+            self.code << op << " ebx, ecx" << "\n"
+            self.code << "mov eax, ebx" << "\n"
+            return "eax"
+
+
     def get_variable_loc(self, var_name):
         for i, var in enumerate(self.variables, start=1):
             if var == var_name:
