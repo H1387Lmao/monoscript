@@ -1,6 +1,5 @@
 from position import TokenPosition, ParserPosition
 from tokens import *
-from parselets import *
 import sys
 
 class Lexer:
@@ -45,53 +44,28 @@ class Lexer:
 
 class Parser:
     def __init__(self, lexer, debug=False):
-        self.debug = debug
         self.tokens = lexer.tokenize()
-        self.position = ParserPosition(-1, self.tokens)
-        self.prefix_parselets = {}
-        self.infix_parselets = {}
-
-        self.register_prefix("NUMBER", ValueParselet())
-        self.register_prefix("IDENTIFIER", ValueParselet())
-        self.register_infix("=", AssignmentParselet(50))
-        self.register_infix("+", BinaryOperatorParselet(10))
-        self.register_infix("-", BinaryOperatorParselet(10))
-        self.register_infix("*", BinaryOperatorParselet(20))
-        self.register_infix("/", BinaryOperatorParselet(20))
-
-        if self.debug:
-            print(self.tokens)
-    def error(self, message, token):
-        print(f"Error at line: {token.position.ln}")
-        print(">>  "+token.position.highlight_line())
-        print(message)
-
-        sys.exit()
-    def register_prefix(self, token_type, parselet):
-        self.prefix_parselets[token_type] = parselet
-
-    def register_infix(self, token_type, parselet):
-        self.infix_parselets[token_type] = parselet
-    def parse_expression(self, precedence=0):
-        token = self.position.consume()
-        prefix = self.prefix_parselets.get(token.token_type)
-        if prefix is None:
-            raise Exception(f"No prefix parselet for {token.token_type}")
-        prefix=prefix.parse
-        left = prefix(self, token)
-        while precedence < self.get_precedence():
-            token = self.position.consume()
-            infix = self.infix_parselets.get(token.token_type)
-            if infix is None:
-                raise ValueError(f"No infix parselet for {token.token_type}")
-            left = infix.parse(self, left, token)
+        self.position=ParserPosition(-1,self.tokens)
+        if debug: print(self.tokens)
+    def binop(self, func, tokens):
+        left = func()
+        while self.position.peek().token_type in tokens:
+            operation=self.position.consume()
+            right = func()
+            left = (operation, left, right)
         return left
-    def get_precedence(self):
-        next_token = self.position.peek()
-        if next_token.token_type in self.infix_parselets:
-            return self.infix_parselets[next_token.token_type].precedence
-        return 0
+    def parse_value(self):
+        next_tk = self.position.peek()
+        if next_tk.token_type in [TOKEN_TYPE.NUMBER,
+                                  TOKEN_TYPE.IDENTIFIER]:
+            self.position.consume()
+            return next_tk
+        raise SyntaxError(f"Unexpected token: {next_tk}")
+    def parse_term(self):
+        return self.binop(self.parse_value, ["*","/"])
+    def parse_expr(self):
+        return self.binop(self.parse_term, ["+","-"])
 
-lexer = Lexer("a=10")
+lexer = Lexer("10+10")
 parser = Parser(lexer=lexer, debug=True)
-print(parser.parse_expression())
+print(parser.parse_expr())
