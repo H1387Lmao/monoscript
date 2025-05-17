@@ -31,13 +31,21 @@ class Lexer:
             if self.current_char in "\n\t ":
                 continue
 
-            if self.current_char in "+-*/=;()":
+            if self.current_char in "+-*/=;(){}":
                 self.try_current_token()
                 self.add(self.current_char)
             else:
+                if self.current_char == '"':
+                    string = ""
+                    while self.position.peek()!='"':
+                        string += self.position.consume()
+                    self.add("STRING", string)
+                    self.position.consume()
+                    continue
+
                 self.current_token+=self.current_char
                 if self.current_token in KEYWORDS:
-                    self.add("KEYWORD",self.current_token)
+                    self.add(self.current_token)
                     self.current_token=""
         self.try_current_token()
         self.add("EOF")

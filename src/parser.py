@@ -13,7 +13,7 @@ class Parser:
             right = func()
             left = (operation, left, right)
         return left
-    def parse_value(self, allowed=[TOKEN_TYPE.NUMBER, TOKEN_TYPE.IDENTIFIER]):
+    def parse_value(self, allowed=[TOKEN_TYPE.NUMBER, TOKEN_TYPE.IDENTIFIER, TOKEN_TYPE.STRING]):
         next_tk = self.position.peek()
         if next_tk.token_type in allowed:
             self.position.consume()
@@ -47,20 +47,28 @@ class Parser:
             )
 
     def parse_stmt(self):
-        if self.position.peek().token_value in ["int"]:
+        if self.position.peek().token_type in ["int", "string"]:
             vartype = self.position.consume()
             stmt=self.parse_assignment(vartype)
             self.position.get(";") #expect a semicolon
             return stmt
-        elif self.position.peek().token_value == "exit":
+        elif self.position.peek().token_type == TOKEN_TYPE.IDENTIFIER:
+            if self.position.peek(2).token_type == '(':
+                var_name = self.position.consume().token_value
+                self.position.get("(")
+                res = self.parse_expr()
+                self.position.get(")")
+                self.position.get(";")
+                return ("function_call", var_name, res)
+        elif self.position.peek().token_type == "{":
             self.position.consume()
-            self.position.get("(")
-            res = self.parse_expr()
-            self.position.get(")")
-            self.position.get(";")
-            return ('exit', res)
-    def parse_prog(self):
+            res = self.parse_prog("}")
+            self.position.get("}")
+            return ("scope", res)
+        else:
+            print("WTF IS THIS", self.position.peek().token_type)
+    def parse_prog(self, token_type ="EOF"):
         stmts=[]
-        while self.position.peek().token_type!="EOF":
+        while self.position.peek().token_type!=token_type:
             stmts.append(self.parse_stmt())
         return stmts

@@ -1,8 +1,9 @@
 class TOKEN_TYPE:
     IDENTIFIER="IDENTIFIER"
     NUMBER="NUMBER"
+    STRING = "STRING"
 
-KEYWORDS = ("int", "exit")
+KEYWORDS = ("int", "string")
 
 class Token:
     def __init__(self, token_type, token_value, position):
