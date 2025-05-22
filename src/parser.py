@@ -45,7 +45,17 @@ class Parser:
                 variable_name,
                 None
             )
-
+    def parse_condition(self):
+        if self.position.peek().token_type == "(":
+            self.position.consume()
+            left=self.parse_expr()
+            compareOperation = self.position.consume()
+            right = self.parse_expr()
+            self.position.get(")")
+            return (compareOperation, left, right)
+    def parse_if_stmt(self):
+        condition = self.parse_condition()
+        return ("if", condition, self.parse_stmt())
     def parse_stmt(self):
         if self.position.peek().token_type in ["int", "string"]:
             vartype = self.position.consume()
@@ -65,6 +75,9 @@ class Parser:
             res = self.parse_prog("}")
             self.position.get("}")
             return ("scope", res)
+        elif self.position.peek().token_type in "if":
+            self.position.consume()
+            return self.parse_if_stmt()
         else:
             print("WTF IS THIS", self.position.peek().token_type)
     def parse_prog(self, token_type ="EOF"):

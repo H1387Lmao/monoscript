@@ -17,7 +17,10 @@ class Lexer:
         self.tokens.append(Token(name, value, self.position.copy()))
     def try_current_token(self):
         if self.current_token:
-            self.add(*self.get_type(self.current_token))
+            if self.current_token in KEYWORDS:
+                self.add(self.current_token)
+            else:
+                self.add(*self.get_type(self.current_token))
             self.current_token=""
     def tokenize(self):
         self.current_token = ""
@@ -28,11 +31,14 @@ class Lexer:
             if self.current_char is None:
                 break
             self.position.consume()
-            if self.current_char in "\n\t ":
+            if self.current_char in "\n\t":
                 continue
 
-            if self.current_char in "+-*/=;(){}":
+            if self.current_char in "+-*/=;(){}~ ":
                 self.try_current_token()
+                if self.current_char == " ":
+
+                    continue
                 self.add(self.current_char)
             else:
                 if self.current_char == '"':
@@ -44,9 +50,6 @@ class Lexer:
                     continue
 
                 self.current_token+=self.current_char
-                if self.current_token in KEYWORDS:
-                    self.add(self.current_token)
-                    self.current_token=""
         self.try_current_token()
         self.add("EOF")
         return self.tokens

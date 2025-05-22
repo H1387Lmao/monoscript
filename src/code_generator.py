@@ -16,6 +16,7 @@ class CodeGenerator:
         self.variables = []
         self.strings=[]
         self.scopes=[0]
+        self.labels=["start"]
 
         self.gen()
     def parse_value(self, node):
@@ -76,7 +77,10 @@ class CodeGenerator:
         self.stack_loc -= pop_count
         self.scopes.pop()
 
-    def generate_stmt(self, node):
+    def generate_stmt(self, node, newlabel=""):
+        if newlabel:
+            self.labels.append(newlabel)
+            self.code << "\n" << newlabel << ":\n"
         if node[0] == "assign":
             dt = node[1]
             vn = node[2]
@@ -115,6 +119,25 @@ class CodeGenerator:
             self.generate_prog(node[1])
             
             self.end_scope()
+        elif node[0] == "if":
+            condition = node[1]
+            stmt = node[2]
+            operation, l, r = condition
+            left = self.parse_value(l)
+            right = self.parse_value(r)
+
+            label_name = "label_"+str(len(self.labels))
+            self.code << "cmp " << left << ", " << right << "\n"
+            if operation.token_type == "=":
+                self.code << "je " << label_name << "\n"
+            elif operation.token_type == "~":
+                self.code << "jne " << label_name << "\n"
+            else:
+                print("invalid operation")
+                return
+
+            self.generate_stmt(stmt, newlabel=label_name)
+
         else:
             print(f"Unknown statement: {node[0]}")
             return

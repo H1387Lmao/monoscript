@@ -3,7 +3,7 @@ class TOKEN_TYPE:
     NUMBER="NUMBER"
     STRING = "STRING"
 
-KEYWORDS = ("int", "string")
+KEYWORDS = ("int", "string", "if")
 
 class Token:
     def __init__(self, token_type, token_value, position):
